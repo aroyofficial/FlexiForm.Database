@@ -274,9 +274,9 @@ namespace FlexiForm.Database.Services
                 }
 
                 if (_configuration.Environment == HostEnvironment.Development &&
-                    _configuration.Target.HasFlag(ExecutionTarget.Constraint))
+                    _configuration.Target.HasFlag(ExecutionTarget.Alter))
                 {
-                    EnqueueBatches($"{baseDirectory}/Constraints/Down", sortAscending: false);
+                    EnqueueBatches($"{baseDirectory}/Alters/Down", sortAscending: false);
                 }
 
                 if (_configuration.Target.HasFlag(ExecutionTarget.Schema))
@@ -295,9 +295,9 @@ namespace FlexiForm.Database.Services
                 }
 
                 if (_configuration.Environment == HostEnvironment.Development &&
-                    _configuration.Target.HasFlag(ExecutionTarget.Constraint))
+                    _configuration.Target.HasFlag(ExecutionTarget.Alter))
                 {
-                    EnqueueBatches($"{baseDirectory}/Constraints/Up");
+                    EnqueueBatches($"{baseDirectory}/Alters/Up");
                 }
 
                 if (_configuration.Target.HasFlag(ExecutionTarget.Proc))

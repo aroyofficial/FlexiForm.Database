@@ -82,8 +82,8 @@ namespace FlexiForm.Database.Extensions
                                 var scriptType = info.ToLower();
                                 switch (scriptType)
                                 {
-                                    case "constraint":
-                                        metadata.Type = ScriptType.Constraint;
+                                    case "alter":
+                                        metadata.Type = ScriptType.Alter;
                                         break;
                                     case "schema":
                                         metadata.Type = ScriptType.Schema;

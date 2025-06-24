@@ -1,5 +1,5 @@
-﻿-- Script Type    : constraint
--- Name           : 20250621131928011_constraint_tblformfields.sql
+﻿-- Script Type    : alter
+-- Name           : 20250621131928011_alter_tblformfields.sql
 -- Created At     : 2025-06-21 13:19:28 UTC (Arijit Roy)
 -- Script ID      : 20250621131928011
 -- Migration Type : Down

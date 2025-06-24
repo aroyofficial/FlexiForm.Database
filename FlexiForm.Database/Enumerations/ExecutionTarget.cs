@@ -23,13 +23,13 @@
         Schema = 1 << 1,
 
         /// <summary>
-        /// Include constraints.
+        /// Include alter scripts.
         /// </summary>
-        Constraint = 1 << 2,
+        Alter = 1 << 2,
 
         /// <summary>
         /// Include all targets.
         /// </summary>
-        All = Proc | Schema | Constraint
+        All = Proc | Schema | Alter
     }
 }
