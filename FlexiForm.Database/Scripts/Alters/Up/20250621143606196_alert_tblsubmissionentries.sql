@@ -1,5 +1,5 @@
-﻿-- Script Type    : constraint
--- Name           : 20250621143606196_constraint_tblsubmissionentries.sql
+﻿-- Script Type    : alert
+-- Name           : 20250621143606196_alert_tblsubmissionentries.sql
 -- Created At     : 2025-06-21 14:36:06 UTC (Arijit Roy)
 -- Script ID      : 20250621143606196
 -- Migration Type : Up

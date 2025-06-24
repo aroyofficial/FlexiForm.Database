@@ -21,8 +21,10 @@
         Proc,
 
         /// <summary>
-        /// A script for defining constraints such as primary keys, foreign keys, or checks.
+        /// Represents a script used to apply non-destructive changes to the database schema,
+        /// such as altering columns, adding or removing constraints (e.g., primary keys, 
+        /// foreign keys, check constraints), or modifying indexes.
         /// </summary>
-        Constraint
+        Alter
     }
 }

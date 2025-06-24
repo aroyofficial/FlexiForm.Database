@@ -20,11 +20,11 @@ try {
     $typeToFolderMap = @{
         "schema"  = "Schemas"
         "proc"    = "StoredProcedures"
-        "constraint" = "Constraints"
+        "alter" = "Alters"
     }
 
     if (-not $Type) {
-        $Type = Read-Host "Enter script type (schema, proc, constraint)"
+        $Type = Read-Host "Enter script type (schema, proc, alter)"
     }
 
     $Type = $Type.Trim().ToLower()
