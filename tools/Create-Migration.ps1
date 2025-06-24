@@ -57,7 +57,7 @@ try {
 
     $filename = "${uniqueNumber}_${Type}_$sanitizedName.sql"
 
-    $basePath = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
+    $basePath = Get-Location
     $scriptsFolder = Join-Path $basePath "FlexiForm.Database/Scripts"
     $typeSubFolder = $typeToFolderMap[$Type]
 
