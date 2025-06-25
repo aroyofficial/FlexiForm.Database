@@ -1,9 +1,10 @@
 ﻿using FlexiForm.Database.Enumerations;
+using FlexiForm.Database.Events;
 
 namespace FlexiForm.Database.Models
 {
     /// <summary>
-    /// Represents a migration task containing a SQL script and provides access to its content.
+    /// Represents a migration task containing a SQL script and provides access to its execution and profiling details.
     /// </summary>
     public class MigrationTask
     {
@@ -13,6 +14,11 @@ namespace FlexiForm.Database.Models
         private StreamReader _reader;
 
         /// <summary>
+        /// Backing field for the <see cref="Status"/> property that holds the current status of the migration task.
+        /// </summary>
+        private MigrationTaskStatus _status;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MigrationTask"/> class with the specified script.
         /// </summary>
         /// <param name="script">The <see cref="Script"/> object to be executed by this task.</param>
@@ -20,8 +26,19 @@ namespace FlexiForm.Database.Models
         public MigrationTask(Script script)
         {
             Script = script ?? throw new ArgumentNullException(nameof(script));
-            Errors = new List<string>();
+            _status = MigrationTaskStatus.New;
         }
+
+        /// <summary>
+        /// Occurs when a summary log entry is generated for a migration task after execution.
+        /// </summary>
+        public event EventHandler<TaskLogSummaryEventArgs> LogSummary;
+
+        /// <summary>
+        /// Occurs when performance tracking for a task is initiated.
+        /// This event is typically raised before the execution of a task begins.
+        /// </summary>
+        public event EventHandler<PerformanceTrackingEventArgs> TrackPerformance;
 
         /// <summary>
         /// Gets the script associated with this migration task.
@@ -34,15 +51,45 @@ namespace FlexiForm.Database.Models
         public int RetryCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the errors encountered while executing task.
+        /// Gets or sets the error message encountered while executing the task.
         /// </summary>
-        public List<string> Errors { get; set; }
+        public string Error { get; set; }
 
         /// <summary>
         /// Gets or sets the current status of the migration task.
-        /// Default value is <see cref="MigrationTaskStatus.New"/>.
+        /// When set, it raises the <see cref="LogSummary"/> and <see cref="TrackPerformance"/> events as appropriate.
         /// </summary>
-        public MigrationTaskStatus Status { get; set; } = MigrationTaskStatus.New;
+        public MigrationTaskStatus Status
+        {
+            get => _status;
+            set
+            {
+                if (_status != value)
+                {
+                    var oldStatus = _status;
+                    var newStatus = value;
+                    _status = newStatus;
+
+                    if (newStatus == MigrationTaskStatus.Picked)
+                    {
+                        OnTrackPerformance();
+                    }
+
+                    if (newStatus == MigrationTaskStatus.Completed ||
+                        newStatus == MigrationTaskStatus.Failed ||
+                        newStatus == MigrationTaskStatus.SkippedForSafety ||
+                        newStatus == MigrationTaskStatus.SkippedForWrongSyntax)
+                    {
+                        OnLogSummary();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the performance profile of the task, including execution duration and memory usage.
+        /// </summary>
+        public ExecutionProfile ExecutionProfile { get; set; }
 
         /// <summary>
         /// Opens a stream reader to read the SQL script content from the file system.
@@ -70,6 +117,35 @@ namespace FlexiForm.Database.Models
         }
 
         /// <summary>
+        /// Raises the <see cref="LogSummary"/> event to notify that task execution has completed or been skipped.
+        /// </summary>
+        protected virtual void OnLogSummary()
+        {
+            LogSummary?.Invoke(this, new TaskLogSummaryEventArgs()
+            {
+                TaskLog = new TaskLog()
+                {
+                    Id = Script.Metadata.Id,
+                    AbsolutePath = Script.AbsolutePath,
+                    Status = Status,
+                    RetryCount = RetryCount,
+                    ExecutionProfile = ExecutionProfile
+                }
+            });
+        }
+
+        /// <summary>
+        /// Raises the <see cref="TrackPerformance"/> event to signal the start of performance tracking for the task.
+        /// </summary>
+        protected virtual void OnTrackPerformance()
+        {
+            TrackPerformance?.Invoke(this, new PerformanceTrackingEventArgs()
+            {
+                Task = this
+            });
+        }
+
+        /// <summary>
         /// Determines whether the internal <see cref="StreamReader"/> is currently open and readable.
         /// </summary>
         /// <returns>
@@ -78,8 +154,8 @@ namespace FlexiForm.Database.Models
         private bool IsReaderOpen()
         {
             return _reader != null &&
-                _reader.BaseStream != null &&
-                _reader.BaseStream.CanRead;
+                   _reader.BaseStream != null &&
+                   _reader.BaseStream.CanRead;
         }
     }
 }

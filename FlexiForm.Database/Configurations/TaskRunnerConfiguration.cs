@@ -1,4 +1,6 @@
 ﻿using FlexiForm.Database.Enumerations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace FlexiForm.Database.Configurations
 {
@@ -11,11 +13,13 @@ namespace FlexiForm.Database.Configurations
         /// Gets or sets the type of migration to run.
         /// Default is <see cref="MigrationType.Both"/>.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public MigrationType Migration { get; set; } = MigrationType.Both;
 
         /// <summary>
         /// Gets the current host environment by detecting the value of the 'ASPNETCORE_ENVIRONMENT' system variable.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public HostEnvironment Environment => DetectEnvironment();
 
         /// <summary>
@@ -36,6 +40,7 @@ namespace FlexiForm.Database.Configurations
         /// or continue execution despite errors (<see cref="TaskRunnerMode.Relaxed"/>).
         /// Default is <see cref="TaskRunnerMode.Strict"/>.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public TaskRunnerMode Mode { get; set; } = TaskRunnerMode.Strict;
 
         /// <summary>
@@ -51,6 +56,7 @@ namespace FlexiForm.Database.Configurations
         /// (e.g., stored procedures, schemas, constraints) to be included during the task execution.
         /// Defaults to <see cref="ExecutionTarget.All"/>, meaning all supported types will be executed.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public ExecutionTarget Target { get; set; } = ExecutionTarget.All;
 
         /// <summary>

@@ -2,7 +2,6 @@
 using FlexiForm.Database.Configurations;
 using FlexiForm.Database.Enumerations;
 using FlexiForm.Database.Exceptions;
-using FlexiForm.Database.Logging;
 using FlexiForm.Database.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -18,12 +17,12 @@ namespace FlexiForm.Database.Services
         /// <summary>
         /// Holds the singleton instance of the <see cref="TaskExecutor"/>.
         /// </summary>
-        private static TaskExecutor? _instance = null;
+        private static TaskExecutor? _instance;
 
         /// <summary>
         /// An object used to synchronize access to the singleton instance.
         /// </summary>
-        private static readonly object _lock = new();
+        private static readonly object _lock;
 
         /// <summary>
         /// Holds the configuration used to determine execution behavior.
@@ -34,6 +33,16 @@ namespace FlexiForm.Database.Services
         /// The database connection used for executing migration tasks.
         /// </summary>
         private readonly IDbConnection _connection;
+
+        /// <summary>
+        /// Initializes static members of the <see cref="TaskExecutor"/> class.
+        /// Sets up the synchronization lock and initializes the singleton instance to null.
+        /// </summary>
+        static TaskExecutor()
+        {
+            _lock = new();
+            _instance = null;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskExecutor"/> class.
@@ -108,6 +117,8 @@ namespace FlexiForm.Database.Services
                             {
                                 foreach (var task in batch)
                                 {
+                                    task.Status = MigrationTaskStatus.Picked;
+
                                     while (task.Status != MigrationTaskStatus.Completed &&
                                         task.RetryCount < _configuration.MaxRetryCount)
                                     {
@@ -115,11 +126,12 @@ namespace FlexiForm.Database.Services
                                         {
                                             task.Status = MigrationTaskStatus.Executing;
                                             var reader = task.OpenReader();
-                                            var sql = reader.ReadToEnd();
+                                            var sql = reader.ReadToEndAsync().GetAwaiter().GetResult();
 
                                             if (!string.IsNullOrWhiteSpace(sql))
                                             {
-                                                _connection.Execute(sql, transaction: batchLevelTransaction, commandTimeout: _configuration.TaskTimeout);
+                                                _connection.ExecuteAsync(sql, transaction: batchLevelTransaction, commandTimeout: _configuration.TaskTimeout)
+                                                    .GetAwaiter().GetResult();
                                                 task.Status = MigrationTaskStatus.Completed;
                                             }
                                         }
@@ -133,14 +145,12 @@ namespace FlexiForm.Database.Services
                                             {
                                                 task.Status = MigrationTaskStatus.Failed;
                                             }
-                                            task.Errors.Add(ex.Message);
+                                            task.Error = ex.Message;
                                             task.RetryCount++;
                                         }
 
                                         task.CloseReader();
                                     }
-
-                                    Logger.Log(task);
                                 }
 
                                 if (!isStrict)
@@ -155,10 +165,6 @@ namespace FlexiForm.Database.Services
                                 if (isStrict)
                                 {
                                     throw new MigrationFailedInStrictModeException();
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"[WARN] Batch failed but continuing (Relaxed mode): {ex.Message}");
                                 }
                             }
                         }

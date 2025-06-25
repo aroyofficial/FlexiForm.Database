@@ -10,6 +10,25 @@ namespace FlexiForm.Database
     public class Program
     {
         /// <summary>
+        /// Static instance of the task runner responsible for managing and executing migration tasks.
+        /// </summary>
+        private static readonly TaskRunner _runner;
+
+        /// <summary>
+        /// Static instance of the task logger responsible for logging configuration, task progress, and results.
+        /// </summary>
+        private static readonly TaskLogger _logger;
+
+        /// <summary>
+        /// Static constructor that initializes the task runner and logger instances.
+        /// </summary>
+        static Program()
+        {
+            _runner = TaskRunner.GetInstance();
+            _logger = TaskLogger.GetInstance();
+        }
+
+        /// <summary>
         /// The main entry point of the application.
         /// Parses command-line arguments and triggers the task runner execution.
         /// </summary>
@@ -18,30 +37,22 @@ namespace FlexiForm.Database
         {
             try
             {
-                TaskRunner.Configure(args);
-                TaskRunner.Run();
-                PrintMessage("[Success] All migration tasks completed successfully.");
+                _runner.Configure(args);
+                _runner.Run();
             }
             catch (Exception ex)
             {
+                _logger.LogMessage("Oops! Something went wrong...");
+
                 if (ex is BaseException baseEx)
                 {
-                    PrintMessage(baseEx.Message);
+                    _logger.LogMessage(baseEx.Message);
                 }
                 else
                 {
-                    PrintMessage(ex.Message);
+                    _logger.LogMessage(ex.Message);
                 }
             }
-        }
-
-        /// <summary>
-        /// Prints the specified message to the console, prefixed with the current local timestamp.
-        /// </summary>
-        /// <param name="message">The message content to display in the console output.</param>
-        private static void PrintMessage(string message)
-        {
-            Console.WriteLine($"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]\n{message}");
         }
     }
 }
