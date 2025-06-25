@@ -1,7 +1,6 @@
 ﻿using FlexiForm.Database.Configurations;
 using FlexiForm.Database.Enumerations;
 using FlexiForm.Database.Exceptions;
-using FlexiForm.Database.Logging;
 using FlexiForm.Database.Models;
 
 namespace FlexiForm.Database.Services
@@ -11,20 +10,81 @@ namespace FlexiForm.Database.Services
     /// Supports command-line configuration, task batching, environment-specific filtering, and safe execution
     /// modes such as strict rollback. The class manages the full lifecycle of script-based migrations.
     /// </summary>
-    public static class TaskRunner
+    public class TaskRunner
     {
-        private static TaskRunnerConfiguration _configuration;
-        private static TaskExecutor _executor;
-        private static Queue<Queue<MigrationTask>> _globalTaskQueue;
+        /// <summary>
+        /// Holds the singleton instance of the <see cref="TaskRunner"/> class.
+        /// </summary>
+        private static TaskRunner _instance;
+
+        /// <summary>
+        /// An object used for thread-safe locking when creating the singleton instance.
+        /// </summary>
+        private static readonly object _lock;
+
+        /// <summary>
+        /// Holds the task runner configuration, initialized from command-line arguments.
+        /// </summary>
+        private TaskRunnerConfiguration _configuration;
+
+        /// <summary>
+        /// Executes the migration tasks using the configured strategy and settings.
+        /// </summary>
+        private readonly TaskExecutor _executor;
+
+        /// <summary>
+        /// Profiles migration tasks by measuring execution time and memory usage.
+        /// </summary>
+        private readonly TaskProfiler _profiler;
+
+        /// <summary>
+        /// A queue of migration task batches that are prepared for execution.
+        /// </summary>
+        private readonly Queue<Queue<MigrationTask>> _globalTaskQueue;
+
+        /// <summary>
+        /// Logs task execution details including configuration, task status, and performance metrics.
+        /// </summary>
+        private readonly TaskLogger _logger;
+
+        /// <summary>
+        /// Static constructor for the <see cref="TaskRunner"/> class.
+        /// Initializes static members such as the synchronization lock and singleton instance.
+        /// </summary>
+        static TaskRunner()
+        {
+            _lock = new object();
+            _instance = null;
+        }
 
         /// <summary>
         /// Initializes the static <see cref="TaskRunner"/> class by creating a default configuration instance.
         /// </summary>
-        static TaskRunner()
+        private TaskRunner()
         {
             _configuration = new TaskRunnerConfiguration();
             _executor = TaskExecutor.GetInstance();
             _globalTaskQueue = new Queue<Queue<MigrationTask>>();
+            _profiler = TaskProfiler.GetInstance();
+            _logger = TaskLogger.GetInstance();
+        }
+
+        /// <summary>
+        /// Gets the singleton instance of the <see cref="TaskRunner"/> class.
+        /// Ensures thread safety using a lock to prevent multiple instances from being created in a multithreaded environment.
+        /// </summary>
+        /// <returns>The single, shared instance of the <see cref="TaskRunner"/> class.</returns>
+        public static TaskRunner GetInstance()
+        {
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new TaskRunner();
+                }
+
+                return _instance;
+            }
         }
 
         /// <summary>
@@ -32,7 +92,7 @@ namespace FlexiForm.Database.Services
         /// Supports options such as retry count, timeout, migration type, execution mode,
         /// incremental execution, and target script types.
         /// </summary>
-        public static void Configure(string[] args)
+        public void Configure(string[] args)
         {
             if (args != null && args.Length > 0)
             {
@@ -165,19 +225,23 @@ namespace FlexiForm.Database.Services
                     }
                 }
             }
-
-            ShowConfiguration(_configuration);
         }
 
         /// <summary>
         /// Executes the main task runner workflow.
         /// This method serves as the entry point for executing configured migration or script tasks.
         /// </summary>
-        public static void Run()
+        public void Run()
         {
+            _logger.LogConfiguration(_configuration);
             _executor.SetConfiguration(_configuration);
             PrepareTasks();
             _executor.ExecuteBatches(_globalTaskQueue);
+
+            if (_configuration.Environment == HostEnvironment.Development)
+            {
+                _logger.GenerateReport();
+            }
         }
 
         /// <summary>
@@ -192,7 +256,7 @@ namespace FlexiForm.Database.Services
         /// A <see cref="Queue{T}"/> of <see cref="Queue{T}"/> batches, where each inner queue contains
         /// a group of <see cref="MigrationTask"/> instances to be processed together.
         /// </returns>
-        private static Queue<Queue<MigrationTask>> GetTasks(string folderPath, bool sortAscending = true)
+        private Queue<Queue<MigrationTask>> GetTasks(string folderPath, bool sortAscending = true)
         {
             if (Directory.Exists(folderPath))
             {
@@ -207,6 +271,8 @@ namespace FlexiForm.Database.Services
                     try
                     {
                         var task = new MigrationTask(new Script(file));
+                        _profiler.Register(task);
+
                         if (task.Script.IsSafe &&
                             task.Script.HasCorrectSyntax)
                         {
@@ -223,8 +289,6 @@ namespace FlexiForm.Database.Services
                             {
                                 task.Status = MigrationTaskStatus.SkippedForSafety;
                             }
-
-                            Logger.Log(task);
                         }
                     }
                     catch (Exception)
@@ -260,7 +324,7 @@ namespace FlexiForm.Database.Services
         /// - Up migrations enqueue tasks in ascending order (e.g., for schema/applying changes).<br/>
         /// - In development environments, only selected targets are considered for down/up.
         /// </remarks>
-        private static void PrepareTasks()
+        private void PrepareTasks()
         {
             var baseDirectory = $"{Environment.CurrentDirectory}/Scripts";
 
@@ -316,7 +380,7 @@ namespace FlexiForm.Database.Services
         /// Indicates whether the task files should be sorted in ascending order by filename.
         /// Set to <c>false</c> to sort in descending order. Default is <c>true</c>.
         /// </param>
-        private static void EnqueueBatches(string path, bool sortAscending = true)
+        private void EnqueueBatches(string path, bool sortAscending = true)
         {
             var batches = GetTasks(path, sortAscending);
 
@@ -324,24 +388,6 @@ namespace FlexiForm.Database.Services
             {
                 _globalTaskQueue.Enqueue(batch);
             }
-        }
-
-        /// <summary>
-        /// Displays the current task runner configuration settings to the console in a readable format.
-        /// </summary>
-        /// <param name="configuration">The configuration instance to display.</param>
-        private static void ShowConfiguration(TaskRunnerConfiguration configuration)
-        {
-            Console.WriteLine();
-            Console.WriteLine("Task Runner Configuration\n");
-            Console.WriteLine($"Environment           : {configuration.Environment}");
-            Console.WriteLine($"Migration Type        : {configuration.Migration}");
-            Console.WriteLine($"Execution Mode        : {configuration.Mode}");
-            Console.WriteLine($"Execute Incrementally : {configuration.ExecuteIncrementally}");
-            Console.WriteLine($"Target Types          : {configuration.Target}");
-            Console.WriteLine($"Task Timeout (sec)    : {configuration.TaskTimeout}");
-            Console.WriteLine($"Max Retry Count       : {configuration.MaxRetryCount}");
-            Console.WriteLine();
         }
     }
 }

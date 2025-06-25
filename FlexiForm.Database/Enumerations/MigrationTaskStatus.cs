@@ -11,6 +11,11 @@
         New,
 
         /// <summary>
+        /// The task is picked by the task executor and is ready to be executed.
+        /// </summary>
+        Picked,
+
+        /// <summary>
         /// The task is currently being executed.
         /// </summary>
         Executing,
