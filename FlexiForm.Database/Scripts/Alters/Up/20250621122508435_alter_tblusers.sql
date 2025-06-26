@@ -1,4 +1,4 @@
-﻿-- Script Type    : alert
+﻿-- Script Type    : alter
 -- Name           : 20250621122508435_alert_tblusers.sql
 -- Created At     : 2025-06-21 12:25:08 UTC (Arijit Roy)
 -- Script ID      : 20250621122508435

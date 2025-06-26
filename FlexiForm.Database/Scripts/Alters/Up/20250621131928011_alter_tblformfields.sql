@@ -1,4 +1,4 @@
-﻿-- Script Type    : alert
+﻿-- Script Type    : alter
 -- Name           : 20250621131928011_alert_tblformfields.sql
 -- Created At     : 2025-06-21 13:19:28 UTC (Arijit Roy)
 -- Script ID      : 20250621131928011
