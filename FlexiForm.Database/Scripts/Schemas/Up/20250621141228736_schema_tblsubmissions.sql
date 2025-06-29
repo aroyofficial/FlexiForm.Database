@@ -7,17 +7,20 @@
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    CREATE TABLE tblSubmissions
-    (
-        Id          INT IDENTITY(1, 1) NOT NULL,
-        RowId       UNIQUEIDENTIFIER DEFAULT Newid() NOT NULL,
-        FormId      UNIQUEIDENTIFIER NOT NULL,
-        SubmittedBy UNIQUEIDENTIFIER NOT NULL,
-        CreatedBy   UNIQUEIDENTIFIER NOT NULL,
-        UpdatedBy   UNIQUEIDENTIFIER NULL,
-        CreatedAt   DATETIME NOT NULL DEFAULT Getutcdate(),
-        UpdatedAt   DATETIME NULL
-     );
+    IF Object_id('tblSubmissions', 'U') IS NULL
+    BEGIN
+        CREATE TABLE tblSubmissions
+        (
+            Id          INT IDENTITY(1, 1) NOT NULL,
+            RowId       UNIQUEIDENTIFIER DEFAULT Newid() NOT NULL,
+            FormId      UNIQUEIDENTIFIER NOT NULL,
+            SubmittedBy UNIQUEIDENTIFIER NOT NULL,
+            CreatedBy   UNIQUEIDENTIFIER NOT NULL,
+            UpdatedBy   UNIQUEIDENTIFIER NULL,
+            CreatedAt   DATETIME NOT NULL DEFAULT Getutcdate(),
+            UpdatedAt   DATETIME NULL
+         );
+    END
 
     COMMIT;
 END TRY

@@ -84,6 +84,7 @@
         /// <summary>
         /// An error occurred while writing to the migration log file.
         /// </summary>
-        MigrationLogWriteFailure = 1015
+        MigrationLogWriteFailure = 1015,
+        InfrastructureSetupFailure = 1016
     }
 }

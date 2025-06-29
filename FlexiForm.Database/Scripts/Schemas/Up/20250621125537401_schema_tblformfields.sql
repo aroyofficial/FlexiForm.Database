@@ -7,18 +7,21 @@
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    CREATE TABLE tblFormFields
-    (
-        Id            INT IDENTITY(1, 1) NOT NULL,
-        RowId         UNIQUEIDENTIFIER DEFAULT Newid() NOT NULL,
-        Name          NVARCHAR(256) NOT NULL,
-        Type          TINYINT NOT NULL,
-        Configuration NVARCHAR(MAX) NOT NULL,
-        CreatedBy     UNIQUEIDENTIFIER NOT NULL,
-        UpdatedBy     UNIQUEIDENTIFIER NULL,
-        CreatedAt     DATETIME NOT NULL DEFAULT Getutcdate(),
-        UpdatedAt     DATETIME NULL,
-     );
+    IF Object_id('tblFormFields', 'U') IS NULL
+    BEGIN
+        CREATE TABLE tblFormFields
+        (
+            Id            INT IDENTITY(1, 1) NOT NULL,
+            RowId         UNIQUEIDENTIFIER DEFAULT Newid() NOT NULL,
+            Name          NVARCHAR(256) NOT NULL,
+            Type          TINYINT NOT NULL,
+            Configuration NVARCHAR(MAX) NOT NULL,
+            CreatedBy     UNIQUEIDENTIFIER NOT NULL,
+            UpdatedBy     UNIQUEIDENTIFIER NULL,
+            CreatedAt     DATETIME NOT NULL DEFAULT Getutcdate(),
+            UpdatedAt     DATETIME NULL,
+         );
+    END
 
     COMMIT;
 END TRY
