@@ -5,40 +5,53 @@ namespace FlexiForm.Database
 {
     /// <summary>
     /// Entry point for the FlexiForm database task runner application.
-    /// Initializes configuration from command-line arguments and executes the task runner.
+    /// This class is responsible for initializing services, handling lifecycle events,
+    /// configuring the environment, and executing the migration process.
     /// </summary>
     public class Program
     {
         /// <summary>
-        /// Static instance of the task runner responsible for managing and executing migration tasks.
+        /// Static instance of the <see cref="MigrationEngine"/> used to coordinate
+        /// the execution of all configured migration tasks in the system.
         /// </summary>
-        private static readonly TaskRunner _runner;
+        private static readonly MigrationEngine _engine;
 
         /// <summary>
-        /// Static instance of the task logger responsible for logging configuration, task progress, and results.
+        /// Static instance of the <see cref="Logger"/> responsible for logging 
+        /// configuration settings, execution progress, exceptions, and summaries.
         /// </summary>
-        private static readonly TaskLogger _logger;
+        private static readonly Logger _logger;
 
         /// <summary>
-        /// Static constructor that initializes the task runner and logger instances.
+        /// Static instance of the <see cref="GlobalProfiler"/> that manages 
+        /// profiling tasks related to resource usage and performance monitoring.
+        /// </summary>
+        private static readonly GlobalProfiler _profiler;
+
+        /// <summary>
+        /// Static constructor that initializes singleton service instances used throughout
+        /// the application lifecycle, including the migration engine, logger, and profiler.
         /// </summary>
         static Program()
         {
-            _runner = TaskRunner.GetInstance();
-            _logger = TaskLogger.GetInstance();
+            _engine = MigrationEngine.GetInstance();
+            _logger = Logger.GetInstance();
+            _profiler = GlobalProfiler.GetInstance();
         }
 
         /// <summary>
-        /// The main entry point of the application.
-        /// Parses command-line arguments and triggers the task runner execution.
+        /// The main method and entry point of the application.
+        /// It parses command-line arguments, configures the migration engine,
+        /// and initiates the execution of migration tasks.
+        /// Errors are caught and logged appropriately to help in diagnostics.
         /// </summary>
-        /// <param name="args">Command-line arguments used to configure the task runner.</param>
+        /// <param name="args">Command-line arguments that control the behavior of the migration task runner.</param>
         public static void Main(string[] args)
         {
             try
             {
-                _runner.Configure(args);
-                _runner.Run();
+                _engine.Configure(args);
+                _engine.Start();
             }
             catch (Exception ex)
             {

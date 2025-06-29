@@ -12,19 +12,19 @@ BEGIN TRY
         ALTER TABLE tblFormFieldMappings
         DROP CONSTRAINT
         IF EXISTS [FK_tblFormFieldMappings.UpdatedBy_tblUsers.RowId];
-    
+
         ALTER TABLE tblFormFieldMappings
         DROP CONSTRAINT
         IF EXISTS [FK_tblFormFieldMappings.CreatedBy_tblUsers.RowId];
-    
+
         ALTER TABLE tblFormFieldMappings
         DROP CONSTRAINT
         IF EXISTS [FK_tblFormFieldMappings.FormFieldId_tblFormFields.RowId];
-    
+
         ALTER TABLE tblFormFieldMappings
         DROP CONSTRAINT
         IF EXISTS [FK_tblFormFieldMappings.FormId_tblForms.RowId];
-    
+
         ALTER TABLE tblFormFieldMappings
         DROP CONSTRAINT
         IF EXISTS [PK_tblFormFieldMappings.RowId];

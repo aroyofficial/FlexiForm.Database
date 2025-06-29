@@ -183,16 +183,16 @@ namespace FlexiForm.Database.Extensions
                                 switch (migrationType)
                                 {
                                     case "up":
-                                        metadata.Migration = MigrationType.Up;
+                                        metadata.MigrationType = MigrationType.Up;
                                         break;
                                     case "down":
-                                        metadata.Migration = MigrationType.Down;
+                                        metadata.MigrationType = MigrationType.Down;
                                         break;
                                     case "both":
-                                        metadata.Migration = MigrationType.Both;
+                                        metadata.MigrationType = MigrationType.Both;
                                         break;
                                     default:
-                                        metadata.Migration = MigrationType.None;
+                                        metadata.MigrationType = MigrationType.None;
                                         break;
                                 }
                                 metadataDict["MigrationType"] = true;

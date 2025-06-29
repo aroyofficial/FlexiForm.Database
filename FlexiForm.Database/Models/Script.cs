@@ -9,6 +9,11 @@ namespace FlexiForm.Database.Models
     public class Script
     {
         /// <summary>
+        /// Reader used for accessing the content of the associated SQL script file.
+        /// </summary>
+        private StreamReader _reader;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Script"/> class using the specified absolute file path.
         /// </summary>
         /// <param name="absolutePath">The full file system path to the SQL script.</param>
@@ -68,6 +73,43 @@ namespace FlexiForm.Database.Models
             {
                 throw new ScriptFileNotFoundException(this.AbsolutePath);
             }
+        }
+
+        /// <summary>
+        /// Opens a <see cref="StreamReader"/> to read the SQL script from the file system.
+        /// If already open, the existing reader is reused.
+        /// </summary>
+        /// <returns>An open <see cref="StreamReader"/> for reading the script content.</returns>
+        public StreamReader OpenReader()
+        {
+            if (!IsReaderOpen())
+            {
+                _reader = new StreamReader(AbsolutePath);
+            }
+            return _reader;
+        }
+
+        /// <summary>
+        /// Closes and disposes the script file reader if it is currently open.
+        /// </summary>
+        public void CloseReader()
+        {
+            if (IsReaderOpen())
+            {
+                _reader.Close();
+                _reader.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the internal script file reader is open and ready to read.
+        /// </summary>
+        /// <returns><c>true</c> if the reader is initialized and its stream is readable; otherwise, <c>false</c>.</returns>
+        private bool IsReaderOpen()
+        {
+            return _reader != null &&
+                   _reader.BaseStream != null &&
+                   _reader.BaseStream.CanRead;
         }
     }
 }
