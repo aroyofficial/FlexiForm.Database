@@ -7,18 +7,21 @@
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    CREATE TABLE tblSubmissionEntries
-    (
-        Id                 INT IDENTITY(1, 1) NOT NULL,
-        RowId              UNIQUEIDENTIFIER DEFAULT Newid() NOT NULL,
-        SubmissionId       UNIQUEIDENTIFIER NOT NULL,
-        FormFieldMappingId UNIQUEIDENTIFIER NOT NULL,
-        Value              NVARCHAR(2048) NOT NULL,
-        CreatedBy          UNIQUEIDENTIFIER NOT NULL,
-        UpdatedBy          UNIQUEIDENTIFIER NULL,
-        CreatedAt          DATETIME NOT NULL DEFAULT Getutcdate(),
-        UpdatedAt          DATETIME NULL
-     );
+    IF Object_id('tblSubmissionEntries', 'U') IS NULL
+    BEGIN
+        CREATE TABLE tblSubmissionEntries
+        (
+            Id                 INT IDENTITY(1, 1) NOT NULL,
+            RowId              UNIQUEIDENTIFIER DEFAULT Newid() NOT NULL,
+            SubmissionId       UNIQUEIDENTIFIER NOT NULL,
+            FormFieldMappingId UNIQUEIDENTIFIER NOT NULL,
+            Value              NVARCHAR(2048) NOT NULL,
+            CreatedBy          UNIQUEIDENTIFIER NOT NULL,
+            UpdatedBy          UNIQUEIDENTIFIER NULL,
+            CreatedAt          DATETIME NOT NULL DEFAULT Getutcdate(),
+            UpdatedAt          DATETIME NULL
+         );
+    END
 
     COMMIT;
 END TRY

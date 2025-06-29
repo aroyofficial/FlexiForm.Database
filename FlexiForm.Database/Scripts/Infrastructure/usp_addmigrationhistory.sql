@@ -1,6 +1,9 @@
 ﻿BEGIN TRY
     BEGIN TRANSACTION;
 
+    DROP PROCEDURE
+    IF EXISTS usp_AddMigrationHistory;
+
     DECLARE @L_SQL NVARCHAR(MAX) = '
     CREATE PROCEDURE usp_AddMigrationHistory @id         VARCHAR(17),
                                                 @scriptname VARCHAR(256),
@@ -38,12 +41,12 @@
                 END
 
                 IF NOT EXISTS (
-                SELECT 1
-                FROM tblMigrationHistory
-                WHERE Id = @L_Id
-                AND ScriptName = @L_ScriptName
-                AND ScriptHash = @L_ScriptHash
-                AND [Type] = @L_Type
+                    SELECT 1
+                    FROM tblMigrationHistory
+                    WHERE Id = @L_Id
+                    AND ScriptName = @L_ScriptName
+                    AND ScriptHash = @L_ScriptHash
+                    AND [Type] = @L_Type
                 )
                 BEGIN
                     INSERT INTO tblMigrationHistory

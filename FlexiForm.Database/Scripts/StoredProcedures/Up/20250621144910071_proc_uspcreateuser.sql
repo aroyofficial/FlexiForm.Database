@@ -7,76 +7,84 @@
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    DECLARE @L_SQL NVARCHAR(MAX) = '
-    CREATE PROCEDURE usp_CreateUser @firstname VARCHAR(128),
-                                    @lastname  VARCHAR(128),
-                                    @email     VARCHAR(256),
-                                    @password  VARCHAR(64),
-                                    @gender    TINYINT
-    WITH ENCRYPTION
-    AS
-      BEGIN
-          BEGIN TRY
-              SET NOCOUNT ON;
+    IF NOT EXISTS (
+        SELECT 1
+        FROM sys.objects
+        WHERE name = 'usp_CreateUser'
+        AND type = 'P'
+    )
+    BEGIN
+        DECLARE @L_SQL NVARCHAR(MAX) = '
+        CREATE PROCEDURE usp_CreateUser @firstname VARCHAR(128),
+                                        @lastname  VARCHAR(128),
+                                        @email     VARCHAR(256),
+                                        @password  VARCHAR(64),
+                                        @gender    TINYINT
+        WITH ENCRYPTION
+        AS
+          BEGIN
+              BEGIN TRY
+                  SET NOCOUNT ON;
 
-              DECLARE @L_FirstName VARCHAR(128) = @firstname;
-              DECLARE @L_LastName VARCHAR(128) = @lastname;
-              DECLARE @L_Email VARCHAR(256) = @email;
-              DECLARE @L_Password VARCHAR(64) = @password;
-              DECLARE @L_Gender TINYINT = @gender;
+                  DECLARE @L_FirstName VARCHAR(128) = @firstname;
+                  DECLARE @L_LastName VARCHAR(128) = @lastname;
+                  DECLARE @L_Email VARCHAR(256) = @email;
+                  DECLARE @L_Password VARCHAR(64) = @password;
+                  DECLARE @L_Gender TINYINT = @gender;
 
-              IF @L_FirstName IS NULL
-                BEGIN
-                    RAISERROR(''@firstname must be given.'',16,1);
-                END
+                  IF @L_FirstName IS NULL
+                    BEGIN
+                        RAISERROR(''@firstname must be given.'',16,1);
+                    END
 
-              IF @L_LastName IS NULL
-                BEGIN
-                    RAISERROR(''@lastname must be given'',16,1);
-                END
+                  IF @L_LastName IS NULL
+                    BEGIN
+                        RAISERROR(''@lastname must be given'',16,1);
+                    END
 
-              IF @L_Email IS NULL
-                BEGIN
-                    RAISERROR(''@email must be given'',16,1);
-                END
+                  IF @L_Email IS NULL
+                    BEGIN
+                        RAISERROR(''@email must be given'',16,1);
+                    END
 
-              IF @L_Password IS NULL
-                BEGIN
-                    RAISERROR(''@password must be given'',16,1);
-                END
+                  IF @L_Password IS NULL
+                    BEGIN
+                        RAISERROR(''@password must be given'',16,1);
+                    END
 
-              IF @L_Gender IS NULL
-                BEGIN
-                    RAISERROR(''@gender must be given'',16,1);
-                END
+                  IF @L_Gender IS NULL
+                    BEGIN
+                        RAISERROR(''@gender must be given'',16,1);
+                    END
 
-              INSERT INTO tblUsers
-                          (FirstName,
-                           LastName,
-                           Email,
-                           [Password],
-                           Gender)
-              VALUES      (@L_FirstName,
-                           @L_LastName,
-                           @L_Email,
-                           @L_Password,
-                           @L_Gender);
+                  INSERT INTO tblUsers
+                              (FirstName,
+                               LastName,
+                               Email,
+                               [Password],
+                               Gender)
+                  VALUES      (@L_FirstName,
+                               @L_LastName,
+                               @L_Email,
+                               @L_Password,
+                               @L_Gender);
 
-              SELECT Scope_identity() AS Id;
+                  SELECT Scope_identity() AS Id;
 
-              SET NOCOUNT OFF;
+                  SET NOCOUNT OFF;
 
-              RETURN;
-          END TRY
-          BEGIN CATCH
-              SET NOCOUNT OFF;
-              DECLARE @L_ErrorMessage VARCHAR(512) = Error_message();
-              RAISERROR(@L_ErrorMessage,16,1);
-              RETURN;
-          END CATCH
-      END';
+                  RETURN;
+              END TRY
+              BEGIN CATCH
+                  SET NOCOUNT OFF;
+                  DECLARE @L_ErrorMessage VARCHAR(512) = Error_message();
+                  RAISERROR(@L_ErrorMessage,16,1);
+                  RETURN;
+              END CATCH
+          END';
 
-      EXEC sp_executesql @L_SQL;
+          EXEC sp_executesql @L_SQL;
+    END
 
     COMMIT;
 END TRY

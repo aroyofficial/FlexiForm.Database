@@ -18,8 +18,8 @@
         PRIMARY KEY (RowId);
 
         ALTER TABLE tblMigrationHistory
-        ADD CONSTRAINT [UNI_tblMigrationHistory.Id]
-        UNIQUE (Id);
+        ADD CONSTRAINT [UNI_tblMigrationHistory.Id_tblMigrationHistory.Type]
+        UNIQUE (Id, [Type]);
     END
 
     COMMIT;

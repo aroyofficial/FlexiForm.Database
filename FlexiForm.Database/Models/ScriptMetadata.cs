@@ -44,7 +44,13 @@ namespace FlexiForm.Database.Models
         /// <summary>
         /// Gets or sets the type of migration the script performs (e.g., baseline, incremental, etc.).
         /// </summary>
-        public MigrationType Migration { get; set; }
+        public MigrationType MigrationType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the hash value representing the unique fingerprint of the migration script.
+        /// Typically used to verify script integrity or detect changes.
+        /// </summary>
+        public string Hash { get; set; }
 
         /// <summary>
         /// Adds a new <see cref="Audit"/> entry to the history and ensures the list is sorted by <c>TimeStamp</c> in ascending order.

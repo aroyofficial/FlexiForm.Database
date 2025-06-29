@@ -1,6 +1,9 @@
 ﻿BEGIN TRY
     BEGIN TRANSACTION;
 
+    DROP PROCEDURE
+    IF EXISTS usp_ClearMigrationHistory;
+
     DECLARE @L_SQL NVARCHAR(MAX) = '
     CREATE PROCEDURE usp_ClearMigrationHistory
     WITH ENCRYPTION

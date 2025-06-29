@@ -1,6 +1,9 @@
 ﻿BEGIN TRY
     BEGIN TRANSACTION;
 
+    DROP PROCEDURE
+    IF EXISTS usp_GetMigrationHistory;
+
     DECLARE @L_SQL NVARCHAR(MAX) = '
     CREATE PROCEDURE usp_GetMigrationHistory
     WITH ENCRYPTION
@@ -11,9 +14,9 @@
 
                 SELECT Id,
                        RowId,
-                       ScriptName,
-                       ScriptHash,
-                       [Type],
+                       ScriptName AS Name,
+                       ScriptHash AS Hash,
+                       [Type] AS MigrationType,
                        RanAt
                 FROM tblMigrationHistory;
 
