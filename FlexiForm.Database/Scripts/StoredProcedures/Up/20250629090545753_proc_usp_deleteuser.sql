@@ -23,7 +23,8 @@ BEGIN TRY
               DECLARE @L_Deleted BIT = 1;
 
               UPDATE tblUsers
-              SET Void = @L_Deleted
+              SET Void = @L_Deleted,
+               Update = GETUTCDATE()
               WHERE  RowId = @L_Id 
               AND Void = @L_Active;
 

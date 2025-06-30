@@ -19,7 +19,7 @@ BEGIN TRY
         NOT NULL;
     END
     
-    IF EXISTS (
+    IF NOT EXISTS (
         SELECT 1
         FROM sys.objects
         WHERE name = 'DF_tblUsers.Void' AND type = 'D'

@@ -41,10 +41,10 @@ BEGIN TRY
                           Void
               FROM   tblUsers
               WHERE  Void = @L_Active
-                AND  (@L_Id IS NOT NULL
+                AND  ((@L_Id IS NOT NULL
                       AND RowId = @L_Id )
                       OR (@L_Email IS NOT NULL
-                      AND Email = @L_Email );
+                      AND Email = @L_Email));
 
               SET NOCOUNT OFF;
 
