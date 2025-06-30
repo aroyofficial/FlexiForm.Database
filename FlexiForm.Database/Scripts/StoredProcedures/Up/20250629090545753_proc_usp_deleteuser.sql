@@ -24,7 +24,7 @@ BEGIN TRY
 
               UPDATE tblUsers
               SET Void = @L_Deleted,
-               Update = GETUTCDATE()
+               UpdatedAt = GETUTCDATE()
               WHERE  RowId = @L_Id 
               AND Void = @L_Active;
 
