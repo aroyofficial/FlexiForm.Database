@@ -128,7 +128,6 @@ namespace FlexiForm.Database.Services
             Console.WriteLine("Migration Configuration\n");
             Console.WriteLine($"Environment        : {configuration.Environment}");
             Console.WriteLine($"Migration Type     : {configuration.Type}");
-            Console.WriteLine($"Execution Strategy : {configuration.Strategy}");
             Console.WriteLine($"Run Mode           : {runMode}");
             Console.WriteLine($"Target Type(s)     : {configuration.Target}");
             Console.WriteLine($"Task Timeout (sec) : {configuration.TaskTimeout}");

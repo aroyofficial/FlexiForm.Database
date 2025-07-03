@@ -37,15 +37,6 @@ namespace FlexiForm.Database.Configurations
         public int MaxRetryCount { get; set; } = 2;
 
         /// <summary>
-        /// Gets or sets the strategy used for executing migration tasks.
-        /// <see cref="MigrationStrategy.Strict"/> rolls back all changes on failure.
-        /// <see cref="MigrationStrategy.Relaxed"/> continues execution even if some scripts fail.
-        /// Default is <see cref="MigrationStrategy.Strict"/>.
-        /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
-        public MigrationStrategy Strategy { get; set; } = MigrationStrategy.Strict;
-
-        /// <summary>
         /// Gets or sets the run mode for the migration process.
         /// Determines whether to run all scripts (<see cref="MigrationRunMode.Full"/>) or only new/updated ones (<see cref="MigrationRunMode.Incremental"/>).
         /// Default is <see cref="MigrationRunMode.Incremental"/>.

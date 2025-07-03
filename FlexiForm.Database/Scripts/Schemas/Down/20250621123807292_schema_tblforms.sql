@@ -12,19 +12,6 @@ BEGIN TRY
         DROP TABLE tblForms;
     END
 
-    CREATE TABLE tblForms
-    (
-        Id             INT IDENTITY(1, 1),
-        RowId          UNIQUEIDENTIFIER DEFAULT Newid(),
-        Name           NVARCHAR(256) NOT NULL,
-        HeaderImageUrl VARCHAR(512) NOT NULL,
-        HeaderText     VARCHAR(1024) NOT NULL,
-        CreatedBy      UNIQUEIDENTIFIER NOT NULL,
-        UpdatedBy      UNIQUEIDENTIFIER NULL,
-        CreatedAt      DATETIME NOT NULL DEFAULT Getutcdate(),
-        UpdatedAt      DATETIME NULL,
-    );
-
     COMMIT;
 END TRY
 BEGIN CATCH
