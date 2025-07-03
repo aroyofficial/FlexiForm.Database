@@ -11,7 +11,6 @@ Available Flags:
   --r, --maxretry <int>        : Maximum retry count (Allowed: 1 to 5)
   --t, --timeout <int>         : Task timeout in seconds (Allowed: 1 to 100)
   --type <MigrationType>       : Type of migration (Enum: e.g., Up, Down, Both.)
-  --m, --mode <TaskRunnerMode> : Mode of execution (Enum: e.g., Strict, Relaxed. )
   --incremental                : Sets migration mode to Incremental
   --full                       : Sets migration mode to Full
   --tgt, --targets <Targets>   : Execution targets (Enum: None, Proc, Schema, Constraint, All or combinations like Proc,Schema)
@@ -36,6 +35,7 @@ try {
     }
 
     if ($environment.ToLower() -eq "development") {
+        Remove-Item -Path "D:\FlexiForm.Database\FlexiForm.Database\bin" -Recurse -Force -ErrorAction SilentlyContinue
         Set-Location -Path "D:\FlexiForm.Database"
         dotnet clean
         dotnet build --configuration Debug

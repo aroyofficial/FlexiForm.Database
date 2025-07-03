@@ -1,6 +1,7 @@
 ﻿using FlexiForm.Database.Configurations;
 using FlexiForm.Database.Enumerations;
 using FlexiForm.Database.Exceptions;
+using FlexiForm.Database.Extensions;
 using FlexiForm.Database.Models;
 using System.Data;
 
@@ -205,27 +206,6 @@ namespace FlexiForm.Database.Services
 
                             break;
 
-                        case "--m":
-                        case "--mode":
-
-                            if (flagValueIndex >= args.Length)
-                            {
-                                throw new MissingFlagValueException(flag);
-                            }
-
-                            if (Enum.TryParse(args[flagValueIndex], ignoreCase: true, out MigrationStrategy mode) &&
-                                Enum.IsDefined(typeof(MigrationStrategy), mode))
-                            {
-                                _configuration.Strategy = mode;
-                                i++;
-                            }
-                            else
-                            {
-                                throw new InvalidFlagValueException(flag, args[flagValueIndex]);
-                            }
-
-                            break;
-
                         case "--incremental":
                             _configuration.RunMode = MigrationRunMode.Incremental;
                             break;
@@ -356,10 +336,7 @@ namespace FlexiForm.Database.Services
                     }
                     catch (Exception)
                     {
-                        if (_configuration.Strategy == MigrationStrategy.Strict)
-                        {
-                            throw;
-                        }
+                        throw;
                     }
                 }
 
@@ -468,91 +445,60 @@ namespace FlexiForm.Database.Services
             try
             {
                 _dbConnector.OpenConnection();
-                var isStrict = _configuration.Strategy == MigrationStrategy.Strict;
 
-                using (var globalTransaction = isStrict ? _dbConnector.BeginTransaction() : null)
+                while (_globalTaskQueue.Count > 0)
                 {
-                    try
-                    {
-                        while (_globalTaskQueue.Count > 0)
-                        {
-                            var batch = _globalTaskQueue.Dequeue();
-                            var batchLevelTransaction = isStrict ? globalTransaction : _dbConnector.BeginTransaction();
+                    var batch = _globalTaskQueue.Dequeue();
 
+                    foreach (var task in batch)
+                    {
+                        task.Status = MigrationTaskStatus.Picked;
+
+                        while (task.Status != MigrationTaskStatus.Completed &&
+                            task.RetryCount < _configuration.MaxRetryCount)
+                        {
+                            var transaction = _dbConnector.BeginTransaction();
+                                    
                             try
                             {
-                                foreach (var task in batch)
+                                task.Status = MigrationTaskStatus.Executing;
+                                var reader = task.Script.OpenReader();
+                                var sql = reader.ReadToEndAsync().GetAwaiter().GetResult();
+
+                                if (!string.IsNullOrWhiteSpace(sql))
                                 {
-                                    task.Status = MigrationTaskStatus.Picked;
-
-                                    while (task.Status != MigrationTaskStatus.Completed &&
-                                        task.RetryCount < _configuration.MaxRetryCount)
+                                    var command = new DBCommand()
                                     {
-                                        try
-                                        {
-                                            task.Status = MigrationTaskStatus.Executing;
-                                            var reader = task.Script.OpenReader();
-                                            var sql = reader.ReadToEndAsync().GetAwaiter().GetResult();
-
-                                            if (!string.IsNullOrWhiteSpace(sql))
-                                            {
-                                                var command = new DBCommand()
-                                                {
-                                                    Sql = sql,
-                                                    Transaction = batchLevelTransaction,
-                                                    Timeout = _configuration.TaskTimeout
-                                                };
-                                                _dbConnector.Execute(command);
-                                                task.Status = MigrationTaskStatus.Completed;
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            if (task.RetryCount < _configuration.MaxRetryCount)
-                                            {
-                                                task.Status = MigrationTaskStatus.Retrying;
-                                            }
-                                            else
-                                            {
-                                                task.Status = MigrationTaskStatus.Failed;
-                                            }
-                                            task.Error = ex.Message;
-                                            task.RetryCount++;
-                                        }
-
-                                        task.Script.CloseReader();
-                                    }
+                                        Sql = sql,
+                                        Transaction = transaction,
+                                        Timeout = _configuration.TaskTimeout
+                                    };
+                                    _dbConnector.Execute(command);
+                                    task.Status = MigrationTaskStatus.Completed;
                                 }
 
-                                if (!isStrict)
+                                if (transaction.IsUsable())
                                 {
-                                    batchLevelTransaction?.Commit();
+                                    transaction.Commit();
                                 }
                             }
                             catch (Exception ex)
                             {
-                                batchLevelTransaction?.Rollback();
-
-                                if (isStrict)
+                                if (transaction.IsUsable())
                                 {
-                                    throw new MigrationFailedInStrictModeException();
+                                    transaction.Rollback();
                                 }
+
+                                task.Status = task.RetryCount < _configuration.MaxRetryCount ?
+                                    MigrationTaskStatus.Retrying : MigrationTaskStatus.Failed;
+                                task.Error = ex.Message;
+                                task.RetryCount++;
+                            }
+                            finally
+                            {
+                                task.Script.CloseReader();
                             }
                         }
-
-                        if (isStrict)
-                        {
-                            globalTransaction?.Commit();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        if (isStrict)
-                        {
-                            globalTransaction?.Rollback();
-                        }
-
-                        throw;
                     }
                 }
             }
