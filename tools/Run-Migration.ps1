@@ -13,7 +13,7 @@ Available Flags:
   --type <MigrationType>       : Type of migration (Enum: e.g., Up, Down, Both.)
   --incremental                : Sets migration mode to Incremental
   --full                       : Sets migration mode to Full
-  --tgt, --targets <Targets>   : Execution targets (Enum: None, Proc, Schema, Constraint, All or combinations like Proc,Schema)
+  --tgt, --targets <Targets>   : Execution targets (Enum: None, Proc, Schema, Constraint, Index, All or combinations like Proc,Schema)
   --help                       : Displays this help message
 
 Usage Example:
