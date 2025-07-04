@@ -7,7 +7,7 @@
 BEGIN TRY
     BEGIN TRANSACTION;
 
-     IF Object_id('tblOTP', 'U') IS NULL
+    IF Object_id('tblOTP', 'U') IS NULL
     BEGIN
         CREATE TABLE tblOTP
         (
@@ -15,13 +15,13 @@ BEGIN TRY
             RowId          UNIQUEIDENTIFIER DEFAULT Newid() NOT NULL,
             Value          VARCHAR(64) NOT NULL,
             Status         TINYINT NOT NULL,
-            GeneratedAt    DATETIME,
-            ExpiredAt      DATETIME,
-            ConsumedAt     DATETIME NULL,
-            CreatedAt      DATETIME,
-            UpdatedAt      DATETIME NULL,
-            CreatedBy      UNIQUEIDENTIFIER, 
-            UpdatedBy      UNIQUEIDENTIFIER NULL
+            GeneratedAt    DATETIME NOT NULL,
+            ExpiredAt      DATETIME NOT NULL,
+            ConsumedAt     DATETIME,
+            CreatedAt      DATETIME NOT NULL,
+            UpdatedAt      DATETIME,
+            CreatedBy      UNIQUEIDENTIFIER NOT NULL, 
+            UpdatedBy      UNIQUEIDENTIFIER
         );
     END
     
