@@ -14,7 +14,7 @@ BEGIN TRY
         AND type = 'PK'
     )
     BEGIN
-        ALTER TABLE tblForms
+        ALTER TABLE tblOTP
         ADD CONSTRAINT [PK_tblOTP.RowId]
         PRIMARY KEY (RowId);
     END
@@ -26,7 +26,7 @@ BEGIN TRY
         AND type = 'D'
     )
     BEGIN
-        ALTER TABLE tblForms
+        ALTER TABLE tblOTP
         ADD CONSTRAINT [DF_tblOTP.Status]
         DEFAULT 0 FOR Status;
     END
@@ -38,7 +38,7 @@ BEGIN TRY
         AND type = 'D'
     )
     BEGIN
-        ALTER TABLE tblForms
+        ALTER TABLE tblOTP
         ADD CONSTRAINT [DF_tblOTP.CreatedAt]
         DEFAULT GETUTCDATE() FOR CreatedAt;
     END
@@ -63,7 +63,7 @@ BEGIN TRY
         AND type = 'F'
     )
     BEGIN
-        ALTER TABLE tblForms
+        ALTER TABLE tblOTP
         ADD CONSTRAINT [FK_tblOTP.UpdatedBy_tblUsers.RowId]
         FOREIGN KEY (UpdatedBy)
         REFERENCES tblUsers(RowId);
