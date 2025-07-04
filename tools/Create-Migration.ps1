@@ -21,10 +21,11 @@ try {
         "schema"  = "Schemas"
         "proc"    = "StoredProcedures"
         "alter" = "Alters"
+	"index" = "Indexes"
     }
 
     if (-not $Type) {
-        $Type = Read-Host "Enter script type (schema, proc, alter)"
+        $Type = Read-Host "Enter script type (schema, proc, alter, index)"
     }
 
     $Type = $Type.Trim().ToLower()
