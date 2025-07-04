@@ -28,8 +28,13 @@
         Alter = 1 << 2,
 
         /// <summary>
+        /// Include index scripts.
+        /// </summary>
+        Index = 1 << 3,
+
+        /// <summary>
         /// Include all targets.
         /// </summary>
-        All = Proc | Schema | Alter
+        All = Proc | Schema | Alter | Index
     }
 }
