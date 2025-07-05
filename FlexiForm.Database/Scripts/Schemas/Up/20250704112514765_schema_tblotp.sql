@@ -25,7 +25,6 @@ BEGIN TRY
         );
     END
     
-
     COMMIT;
 END TRY
 BEGIN CATCH

@@ -37,7 +37,8 @@ BEGIN TRY
 
                       UPDATE tblOTP
                       SET Status    = @L_Expired,
-                          UpdatedAt = GETUTCDATE()
+                          UpdatedAt = GETUTCDATE(),
+                          UpdatedBy = @L_CreatedBy
                       WHERE CreatedBy = @L_CreatedBy
                       AND Status = @L_New;
 
