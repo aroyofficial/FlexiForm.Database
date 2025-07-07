@@ -23,22 +23,36 @@ BEGIN TRY
             DECLARE @L_UserId UNIQUEIDENTIFIER = @userid;
             DECLARE @L_CurrentUTC DATETIME = GETUTCDATE();
             DECLARE @L_New TINYINT = 1;
+            DECLARE @L_Active TINYINT = 0;
 
-            SELECT TOP 1 Id,
-                         RowId,
-                         Value,
-                         Status,
-                         GeneratedAt,
-                         ExpiredAt,
-                         CreatedAt,
-                         UpdatedAt,
-                         CreatedBy,
-                         UpdatedBy
-            FROM tblOTP
-            WHERE UserId = @L_UserId
-            AND Value = @L_Value
-            AND @L_CurrentUTC BETWEEN CreatedAt AND ExpiredAt
-            AND Status = @L_New;
+            IF EXISTS (
+                SELECT 1
+                FROM tblUsers
+                WHERE RowId = @L_UserId
+                AND Void = @L_Active
+            )
+            BEGIN
+                SELECT TOP 1 Id,
+                             RowId,
+                             Value,
+                             Status,
+                             GeneratedAt,
+                             ExpiredAt,
+                             ConsumedAt,
+                             CreatedAt,
+                             UpdatedAt,
+                             CreatedBy,
+                             UpdatedBy
+                FROM tblOTP
+                WHERE UserId = @L_UserId
+                AND Value = @L_Value
+                AND @L_CurrentUTC BETWEEN CreatedAt AND ExpiredAt
+                AND Status = @L_New;
+            END
+            ELSE
+            BEGIN
+                RAISERROR(''User with the given @userid does not exist'', 16, 1)
+            END
 
             SET NOCOUNT OFF;
             RETURN;
