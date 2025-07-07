@@ -44,7 +44,7 @@ BEGIN TRY
                              CreatedBy,
                              UpdatedBy
                 FROM tblOTP
-                WHERE UserId = @L_UserId
+                WHERE CreatedBy = @L_UserId
                 AND Value = @L_Value
                 AND @L_CurrentUTC BETWEEN CreatedAt AND ExpiredAt
                 AND Status = @L_New;

@@ -31,7 +31,7 @@ BEGIN TRY
                 ConsumedAt = @L_CurrentUTC,
                 UpdatedAt = @L_CurrentUTC,
                 UpdatedBy = @L_UserId
-            WHERE UserId = @L_UserId
+            WHERE CreatedBy = @L_UserId
             AND Value = @L_OTP
             AND @L_CurrentUTC BETWEEN GeneratedAt AND ExpiredAt
             AND Status = @L_New;
@@ -44,7 +44,7 @@ BEGIN TRY
             END
             ELSE
             BEGIN
-                UPDATE tblUser
+                UPDATE tblUsers
                 SET Password = @L_Password,
                     UpdatedAt = @L_CurrentUTC
                 WHERE RowId = @L_UserId
