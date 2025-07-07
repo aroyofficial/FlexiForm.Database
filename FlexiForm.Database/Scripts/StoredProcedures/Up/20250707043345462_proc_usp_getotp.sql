@@ -11,15 +11,13 @@ BEGIN TRY
     IF EXISTS usp_GetOTP;
 
     DECLARE @L_SQL NVARCHAR(MAX) = '
-    CREATE PROCEDURE usp_GetOTP @value VARCHAR(64),
-                                @userid UNIQUEIDENTIFIER
+    CREATE PROCEDURE usp_GetOTP @userid UNIQUEIDENTIFIER
     WITH ENCRYPTION
     AS
     BEGIN
         BEGIN TRY
             SET NOCOUNT ON;
 
-            DECLARE @L_Value VARCHAR(64) = @value;
             DECLARE @L_UserId UNIQUEIDENTIFIER = @userid;
             DECLARE @L_CurrentUTC DATETIME = GETUTCDATE();
             DECLARE @L_New TINYINT = 1;
@@ -46,7 +44,6 @@ BEGIN TRY
                              UpdatedBy
                 FROM tblOTP
                 WHERE CreatedBy = @L_UserId
-                AND Value = @L_Value
                 AND @L_CurrentUTC BETWEEN CreatedAt AND ExpiredAt
                 AND Status = @L_New;
             END
